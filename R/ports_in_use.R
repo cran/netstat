@@ -4,7 +4,7 @@
 #'
 #' @usage ports_in_use()
 #'
-#' @return A character vector of the TCP ports currently in use
+#' @return An integer vector of the TCP ports currently in use
 #'
 #' @export
 #'
@@ -24,10 +24,10 @@ ports_in_use <- function() {
 
   os <- Sys.info()['sysname']
 
-  switch(os,
+  out <- switch(os,
 
-         Windows = {
-           local <- active_connections_table$Local
+         "Windows" = {
+           local <- active_connections_table[ , 4] # Local / locale depending on language
 
            sapply(strsplit(local, ":"), function(x) { tail(x, 1) } )
 
@@ -49,14 +49,16 @@ ports_in_use <- function() {
              address_split <- strsplit(local_address, "\\.")
              address_components <- length(address_split[[1]])
              last_component <- address_split[[1]][address_components]
-             #trimws(last_component)
+             trimws(last_component)
            }
 
-           unique(unname(sapply(local_address, after_last_dot))) # Note: may contain * (star character)
+           unname(sapply(local_address, after_last_dot)) # Note: may contain * (star character)
 
          }
 
          )
+
+  sort(unique(as.integer(out[grepl("^[[:digit:]]+$", out)])))
 
 }
 
